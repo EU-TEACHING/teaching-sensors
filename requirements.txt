@@ -1,0 +1,1 @@
+vidgear[core]===0.2.5
