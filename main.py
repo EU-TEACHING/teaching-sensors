@@ -40,6 +40,7 @@ def get_service_fn():
 
 
 if __name__ == '__main__':
-    node = TEACHINGNode(get_service_fn())
+    service_fns, producer, consumer = get_service_fn
+    node = TEACHINGNode(service_fns, producer, consumer)
     node.build()
     node.start()
