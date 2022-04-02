@@ -1,24 +1,43 @@
 import os
 
+from base.communication.packet import DataPacket
+from base.node import TEACHINGNode
+
 from .utils.shimmer import Shimmer3
 from .utils.shimmer_util import SHIMMER_GSRplus, BT_CONNECTED, SENSOR_GSR, SENSOR_INT_EXP_ADC_CH13, GSR_SKIN_CONDUCTANCE
+from .utils.ppg_to_hr import PPGtoHR
 
 
 class ShimmerGSRPlus:
 
     COM_PORT = '/dev/ttyS0'
 
-    def __init__(self, sampling_rate) -> None:
+    def __init__(self) -> None:
         """Initializes the Shimmer GSR+ sensor device.
 
         Args:
             sampling_rate (int): the sampling frequency of the sensor
         """
-        super(ShimmerGSRPlus, self).__init__()       
-        self._device = Shimmer3(shimmer_type=SHIMMER_GSRplus, debug=True)
-        self._sampling_rate = sampling_rate
+        self._sampling_rate = int(os.environ['SAMPLING_RATE'])
+        self._process = bool(os.environ['PROCESS'])
 
+        self._device = None
+        self._ppg_to_hr = None
+        self._build()
+
+    @TEACHINGNode(producer=True, consumer=False)
     def __call__(self):
+        if not self._process:
+            for n, reads in self._stream():
+                timestamp = reads.pop('timestamp')
+                yield DataPacket(topic='sensor.gsr', timestamp=timestamp, body=reads)
+        else:
+            for proc_reads in self._ppg_to_hr(self._stream()):
+                timestamp = proc_reads.pop('timestamp')
+                yield DataPacket(topic='sensor.gsr', timestamp=timestamp, body=proc_reads)
+
+
+    def _stream(self):
         """This generator handles the stream of PPG, EDA and timestamp data from the Shimmer sensor.
 
         Raises:
@@ -45,8 +64,20 @@ class ShimmerGSRPlus:
                 reads['EDA'].append(eda)
 
             yield n, reads
+
+    def _build(self):
+        print("Building the Shimmer GSR+ service...")
+        self._device = Shimmer3(shimmer_type=SHIMMER_GSRplus, debug=True)
+        self.connect()
+        print("Done!")
+
+        if self._process:
+            print("Building the PPGtoHR processing module...")
+            self._ppg_to_hr = PPGtoHR(self._sampling_rate)
+            print("Done!")
     
-    def connect(self) -> bool:
+
+    def _connect(self) -> bool:
         """This function handles the connection via bluetooth with the Shimmer sensor.
 
         Args:
@@ -74,7 +105,7 @@ class ShimmerGSRPlus:
 
         return False
     
-    def disconnect(self) -> bool:
+    def _disconnect(self) -> bool:
         """Disconnects the Shimmer sensor.
 
         Returns:

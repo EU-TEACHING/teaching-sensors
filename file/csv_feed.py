@@ -2,26 +2,32 @@ import csv
 import os
 import time
 
+from base.communication.packet import DataPacket
+from base.node import TEACHINGNode
+
 class CSVFeed:
 
-    def __init__(self, file_path, transmit_rate):
-        self._path = file_path
-        self._transmit_rate = transmit_rate
+    def __init__(self):
+        self._path = os.environ['FILE_PATH']
+        self._transmit_rate = os.environ['TRANSMIT_RATE']
         self._headers = []
         self._rows = []
-    
+        self._build()
 
-    def load_file(self):
-        with open(self.file_path) as csv_file:
-            csv_reader = csv.reader(csv_file, delimiter=',')           
-            for row in csv_reader:
-                self._rows.append(row)
-
+    @TEACHINGNode(producer=True, consumer=False)
     def __call__(self):
         i = 0
         while True:
             for j, header in enumerate(self._headers):
-                yield {'topic': header, 'body': float(self._rows[i][j])}
+                yield DataPacket(topic=header, body={'value': float(self._rows[i][j])})
 
                 i = i + 1 if i < len(self._rows) - 1 else 0
                 time.sleep(self._transmit_rate)
+
+    def _build(self):
+        print("Building the CSV file reader...")
+        with open(self.file_path) as csv_file:
+            csv_reader = csv.reader(csv_file, delimiter=',')           
+            for row in csv_reader:
+                self._rows.append(row)
+        print("Done!")
