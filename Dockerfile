@@ -88,7 +88,7 @@ RUN git clone https://github.com/opencv/opencv.git && \
             -D ENABLE_PRECOMPILED_HEADERS=OFF \
             ..; \
 #
-    elif [ "${ARCH}" = "arm" ] \
+    elif [ "${ARCH}" = "arm" ]; then \
         cmake \
             -D CMAKE_BUILD_TYPE=RELEASE \
             -D BUILD_PYTHON_SUPPORT=ON \
