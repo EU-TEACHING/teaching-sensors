@@ -1,9 +1,11 @@
-FROM teaching_image AS sensors_stage
+FROM teaching-base AS sensors_stage
 WORKDIR /app
-RUN pip install -r requirements.txt
 COPY /file /app/file
 COPY /wearable /app/wearable
 COPY main.py /app/main.py
+COPY requirements.txt /app/requirements.txt
+RUN pip install -r requirements.txt
+RUN rm requirements.txt
 CMD ["python3", "main.py"]
 
 
@@ -61,10 +63,10 @@ RUN if [ "${ARCH}" = "arm" ]; then\
 RUN python3 -m pip install numpy
 
 RUN git clone https://github.com/opencv/opencv.git && \
-    mkdir /opencv/build && \
-    cd /opencv/build && \
+    mkdir ./opencv/build && \
+    cd ./opencv/build && \
 #
-    if [ "${ARCH}" = "x86"]; then \
+    if [ "${ARCH}" = "x86" ]; then \
         cmake \
             -D CMAKE_BUILD_TYPE=RELEASE \
             -D BUILD_PYTHON_SUPPORT=ON \
@@ -119,7 +121,6 @@ RUN git clone https://github.com/opencv/opencv.git && \
     fi && \
 #
 #   Build, Test and Install
-    cd /opencv/build && \
     make -j 4 && \
     make install && \
     ldconfig && \

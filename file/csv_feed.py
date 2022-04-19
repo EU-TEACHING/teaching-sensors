@@ -18,15 +18,14 @@ class CSVFeed:
     def __call__(self):
         i = 0
         while True:
-            for j, header in enumerate(self._headers):
-                yield DataPacket(topic=header, body={'value': float(self._rows[i][j])})
+            yield DataPacket(topic='sensors.file', body=dict(zip(self._headers, self._rows[i])))
 
-                i = i + 1 if i < len(self._rows) - 1 else 0
-                time.sleep(self._transmit_rate)
+            i = i + 1 if i < len(self._rows) - 1 else 0
+            time.sleep(self._transmit_rate)
 
     def _build(self):
         print("Building the CSV file reader...")
-        with open(self.file_path) as csv_file:
+        with open(self._path) as csv_file:
             csv_reader = csv.reader(csv_file, delimiter=',')           
             for row in csv_reader:
                 self._rows.append(row)
