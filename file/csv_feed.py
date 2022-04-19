@@ -26,7 +26,8 @@ class CSVFeed:
     def _build(self):
         print("Building the CSV file reader...")
         with open(self._path) as csv_file:
-            csv_reader = csv.reader(csv_file, delimiter=',')           
+            csv_reader = csv.reader(csv_file, delimiter=',')
+            self._headers = next(csv_reader)
             for row in csv_reader:
-                self._rows.append(row)
+                self._rows.append([float(x) for x in row])
         print("Done!")
