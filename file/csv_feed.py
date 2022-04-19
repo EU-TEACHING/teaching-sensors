@@ -18,7 +18,7 @@ class CSVFeed:
     def __call__(self):
         i = 0
         while True:
-            yield DataPacket(topic='sensors.file', body=dict(zip(self._headers, self._rows[i])))
+            yield DataPacket(topic='sensor.file.value', body=dict(zip(self._headers, self._rows[i])))
 
             i = i + 1 if i < len(self._rows) - 1 else 0
             time.sleep(self._transmit_rate)

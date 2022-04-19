@@ -37,10 +37,10 @@ class VideoFeed:
     def __call__(self):
         thread = threading.Thread(target=self._start_streaming)
         thread.start()
-        addr = f'rtmp://{self._rtmp_server}/live/{self._rtmp_topic}'
+        addr = f'rtmp://{self._rtmp_server}/live/stream'
         while True:
-            yield DataPacket(topic=self._rtmp_topic, body={'address': addr})
-            time.sleep(0.001)
+            yield DataPacket(topic='sensor.camera.stream_address', body={'address': addr})
+            time.sleep(0.5)
 
     def _build(self):
         if self._source is not None:            
@@ -51,7 +51,7 @@ class VideoFeed:
                 self._stream_in = VideoGear(source=self._source).start() 
 
         if self._rtmp_server is not None:
-            self._stream_url = f'rtmp://{self._rtmp_server}/live/{self._rtmp_topic}'
+            self._stream_url = f'rtmp://{self._rtmp_server}/live/stream'
             self._streamer =  StreamGear(output=self._stream_url, **stream_params)
         
         #if self._record:

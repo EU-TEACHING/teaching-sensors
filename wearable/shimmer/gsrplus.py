@@ -27,14 +27,15 @@ class ShimmerGSRPlus:
 
     @TEACHINGNode(produce=True, consume=False)
     def __call__(self):
+        sensing_topic = 'sensor.gsr.value'
         if not self._process:
             for n, reads in self._stream():
                 timestamp = reads.pop('timestamp')
-                yield DataPacket(topic='sensor.gsr', timestamp=timestamp, body=reads)
+                yield DataPacket(topic=sensing_topic, timestamp=timestamp, body=reads)
         else:
             for proc_reads in self._ppg_to_hr(self._stream()):
                 timestamp = proc_reads.pop('timestamp')
-                yield DataPacket(topic='sensor.gsr', timestamp=timestamp, body=proc_reads)
+                yield DataPacket(topic=sensing_topic, timestamp=timestamp, body=proc_reads)
 
 
     def _stream(self):
