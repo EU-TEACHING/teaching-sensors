@@ -33,7 +33,7 @@ class VideoFeed:
         self._streamer = None
         #self._writer = None
 
-    @TEACHINGNode(producer=True, consumer=False)
+    @TEACHINGNode(produce=True, consume=False)
     def __call__(self):
         thread = threading.Thread(target=self._start_streaming)
         thread.start()

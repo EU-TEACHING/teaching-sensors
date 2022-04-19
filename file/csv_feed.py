@@ -14,7 +14,7 @@ class CSVFeed:
         self._rows = []
         self._build()
 
-    @TEACHINGNode(producer=True, consumer=False)
+    @TEACHINGNode(produce=True, consume=False)
     def __call__(self):
         i = 0
         while True:

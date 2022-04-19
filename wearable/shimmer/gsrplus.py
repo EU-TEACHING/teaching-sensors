@@ -25,7 +25,7 @@ class ShimmerGSRPlus:
         self._ppg_to_hr = None
         self._build()
 
-    @TEACHINGNode(producer=True, consumer=False)
+    @TEACHINGNode(produce=True, consume=False)
     def __call__(self):
         if not self._process:
             for n, reads in self._stream():
