@@ -9,7 +9,7 @@ class CSVFeed:
 
     def __init__(self):
         self._path = os.environ['FILE_PATH']
-        self._transmit_rate = os.environ['TRANSMIT_RATE']
+        self._transmit_rate = float(os.environ['TRANSMIT_RATE'])
         self._headers = []
         self._rows = []
         self._build()
