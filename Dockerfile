@@ -1,6 +1,5 @@
 ARG ARCH
-FROM chronis10/teaching-base:latest-${ARCH} as sensors_stage
-ARG ARCH
+FROM chronis10/teaching-base:${ARCH} as sensors_stage
 WORKDIR /app
 COPY /file /app/file
 COPY /wearable /app/wearable
