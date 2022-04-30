@@ -1,4 +1,6 @@
-FROM teaching-base AS sensors_stage
+ARG ARCH
+FROM chronis10/teaching-base:latest-${ARCH} as sensors_stage
+ARG ARCH
 WORKDIR /app
 COPY /file /app/file
 COPY /wearable /app/wearable
@@ -56,7 +58,7 @@ RUN apt-get -y update -qq --fix-missing && \
     libxrender1 \
     git
 
-RUN if [ "${ARCH}" = "arm" ]; then\
+RUN if [ "${ARCH}" = "arm64" ]; then\
         apt-get -y install --no-install-recommends gcc-aarch64-linux-gnu \
         g++-aarch64-linux-gnu;\
     fi
@@ -66,7 +68,7 @@ RUN git clone https://github.com/opencv/opencv.git && \
     mkdir ./opencv/build && \
     cd ./opencv/build && \
 #
-    if [ "${ARCH}" = "x86" ]; then \
+    if [ "${ARCH}" = "amd64" ]; then \
         cmake \
             -D CMAKE_BUILD_TYPE=RELEASE \
             -D BUILD_PYTHON_SUPPORT=ON \
