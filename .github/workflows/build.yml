@@ -33,6 +33,7 @@ jobs:
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/teaching-sensors:arm64
           build-args: ARCH=arm64
+          target: sensors_stage
       -
         name: Build and push AMD64
         uses: docker/build-push-action@v2
@@ -44,3 +45,4 @@ jobs:
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/teaching-sensors:amd64
           build-args: ARCH=amd64
+          target: sensors_stage
