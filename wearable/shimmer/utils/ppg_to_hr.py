@@ -27,28 +27,28 @@ class PPGtoHR:
             dict: a dictionary containing the timestap, HR and EDA of the processed sample
         """    
         span = self._sampling_rate * self._seconds_per_return
-        residual = {'timestamp': [], 'HR': [], 'EDA': []}
+        residual = {'timestamp': [], 'hr': [], 'eda': []}
         n_samples = 0
         for n, reads in stream:
             if n > 0:
                 n_samples += n
-                reads['HR'] = [self._alg(ppg, reads['timestamp'][i] * 1000)[0] for i, ppg in enumerate(reads['PPG'])]
+                reads['hr'] = [self._alg(ppg, reads['timestamp'][i] * 1000)[0] for i, ppg in enumerate(reads['ppg'])]
                 reads['timestamp'] = [datetime.fromtimestamp(t).strftime("%H:%M:%S.%f")[:-3] for t in reads['timestamp']]
 
                 residual['timestamp'] += reads['timestamp']
-                residual['HR'] += reads['HR']
-                residual['EDA'] += reads['EDA']
+                residual['hr'] += reads['hr']
+                residual['eda'] += reads['eda']
             if n_samples >= span:
                 to_publish = {
                     'timestamp': residual['timestamp'][:span],
-                    'HR': residual['HR'][:span],
-                    'EDA': residual['EDA'][:span]
+                    'hr': residual['hr'][:span],
+                    'eda': residual['eda'][:span]
                 }
 
                 residual = {
                     'timestamp': residual['timestamp'][span:],
-                    'HR': residual['HR'][span:],
-                    'EDA': residual['EDA'][span:]
+                    'hr': residual['hr'][span:],
+                    'eda': residual['eda'][span:]
                 }
                 n_samples -= span
 

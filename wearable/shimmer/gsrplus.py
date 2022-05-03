@@ -55,14 +55,14 @@ class ShimmerGSRPlus:
 
         while True:
             n, packets = self._device.read_data_packet_extended(calibrated=True)
-            reads = {'timestamp': [], 'PPG': [], 'EDA': []}
+            reads = {'timestamp': [], 'ppg': [], 'eda': []}
             for pkt in packets:
 
                 timestamp, ppg, eda = pkt[2], pkt[3], pkt[4]
 
                 reads['timestamp'].append(timestamp)
-                reads['PPG'].append(ppg)
-                reads['EDA'].append(eda)
+                reads['ppg'].append(ppg)
+                reads['eda'].append(eda)
 
             yield n, reads
 
