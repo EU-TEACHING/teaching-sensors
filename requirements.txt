@@ -1,1 +1,2 @@
 vidgear[core]===0.2.5
+pyserial===3.5
