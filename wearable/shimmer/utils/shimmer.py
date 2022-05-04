@@ -13,7 +13,7 @@ import numpy as np
 import serial
 from serial import SerialException, SerialTimeoutException
 
-import shimmer_util as util
+from . import shimmer_util as util
 
 
 class Shimmer3:

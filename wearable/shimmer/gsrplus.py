@@ -31,7 +31,8 @@ class ShimmerGSRPlus:
         if not self._process:
             for n, reads in self._stream():
                 timestamp = reads.pop('timestamp')
-                yield DataPacket(topic=sensing_topic, timestamp=timestamp, body=reads)
+                for i, t in enumerate(timestamp):
+                    yield DataPacket(topic=sensing_topic, timestamp=t, body={'eda': reads['eda'][i], 'ppg': reads['ppg'][i]})
         else:
             for proc_reads in self._ppg_to_hr(self._stream()):
                 timestamp = proc_reads.pop('timestamp')
@@ -69,7 +70,7 @@ class ShimmerGSRPlus:
     def _build(self):
         print("Building the Shimmer GSR+ service...")
         self._device = Shimmer3(shimmer_type=SHIMMER_GSRplus, debug=True)
-        self.connect()
+        self._connect()
         print("Done!")
 
         if self._process:
@@ -91,7 +92,7 @@ class ShimmerGSRPlus:
 
         # Starting connection with the port /dev/ttyS0
         if self._device.connect(com_port=ShimmerGSRPlus.COM_PORT):
-            if not self._device.set_sampling_rate(self.sampling_rate):
+            if not self._device.set_sampling_rate(self._sampling_rate):
                 return False
             # After the connection we want to enable GSR and PPG
             if not self._device.set_enabled_sensors(SENSOR_GSR, SENSOR_INT_EXP_ADC_CH13):
