@@ -19,7 +19,7 @@ class ShimmerGSRPlus:
             sampling_rate (int): the sampling frequency of the sensor
         """
         self._sampling_rate = int(os.environ['SAMPLING_RATE'])
-        self._process = bool(os.environ['PROCESS'])
+        self._process = os.environ['PROCESS'] in ['true', 'True']
 
         self._device = None
         self._ppg_to_hr = None
@@ -30,13 +30,21 @@ class ShimmerGSRPlus:
         sensing_topic = 'sensor.gsr.value'
         if not self._process:
             for n, reads in self._stream():
-                timestamp = reads.pop('timestamp')
-                for i, t in enumerate(timestamp):
-                    yield DataPacket(topic=sensing_topic, timestamp=t, body={'eda': reads['eda'][i], 'ppg': reads['ppg'][i]})
+                if n > 0:
+                    timestamp = reads.pop('timestamp')
+                    yield DataPacket(
+                        topic=sensing_topic, 
+                        timestamp=timestamp, 
+                        body={'eda': reads['eda'], 'ppg': reads['ppg']}
+                    )
         else:
             for proc_reads in self._ppg_to_hr(self._stream()):
                 timestamp = proc_reads.pop('timestamp')
-                yield DataPacket(topic=sensing_topic, timestamp=timestamp, body=proc_reads)
+                yield DataPacket(
+                    topic=sensing_topic, 
+                    timestamp=timestamp, 
+                    body=proc_reads
+                )
 
 
     def _stream(self):
