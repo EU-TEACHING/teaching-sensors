@@ -1,7 +1,7 @@
 # sensors
 Project for all the sensors that can be instantiated, from "file" sensors to cameras and wearables.
 
-# How to use Bluetooth on the iMX8
+# How to connect the Bluetooth Dongle on the iMX8
 The shimmer devices need bluetooth to communicate with the board.
 
 You need to:
