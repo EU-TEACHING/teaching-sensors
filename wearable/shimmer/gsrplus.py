@@ -35,7 +35,7 @@ class ShimmerGSRPlus:
                     yield DataPacket(
                         topic=sensing_topic, 
                         timestamp=timestamp, 
-                        body={'eda': reads['eda'], 'ppg': reads['ppg']}
+                        body=[dict(zip(reads,t)) for t in zip(*reads.values())]
                     )
         else:
             for proc_reads in self._ppg_to_hr(self._stream()):
@@ -43,7 +43,7 @@ class ShimmerGSRPlus:
                 yield DataPacket(
                     topic=sensing_topic, 
                     timestamp=timestamp, 
-                    body=proc_reads
+                    body=[dict(zip(proc_reads,t)) for t in zip(*proc_reads.values())]
                 )
 
 
