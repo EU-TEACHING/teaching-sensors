@@ -1,4 +1,5 @@
 import os
+from datetime import datetime
 
 from base.communication.packet import DataPacket
 from base.node import TEACHINGNode
@@ -34,7 +35,7 @@ class ShimmerGSRPlus:
                     timestamp = reads.pop('timestamp')
                     yield DataPacket(
                         topic=sensing_topic, 
-                        timestamp=timestamp, 
+                        timestamp=[datetime.fromtimestamp(timestamp)], 
                         body=[dict(zip(reads,t)) for t in zip(*reads.values())]
                     )
         else:
@@ -42,7 +43,7 @@ class ShimmerGSRPlus:
                 timestamp = proc_reads.pop('timestamp')
                 yield DataPacket(
                     topic=sensing_topic, 
-                    timestamp=timestamp, 
+                    timestamp=[datetime.fromtimestamp(timestamp)],
                     body=[dict(zip(proc_reads,t)) for t in zip(*proc_reads.values())]
                 )
 
