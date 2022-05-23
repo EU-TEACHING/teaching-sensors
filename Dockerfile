@@ -1,12 +1,14 @@
 ARG ARCH
 FROM chronis10/teaching-base:${ARCH} as sensors_stage
 WORKDIR /app
-COPY /file /app/file
-COPY /wearable /app/wearable
-COPY main.py /app/main.py
 COPY requirements.txt /app/requirements.txt
 RUN pip install -r requirements.txt
 RUN rm requirements.txt
+
+COPY /file /app/file
+COPY /wearable /app/wearable
+COPY main.py /app/main.py
+
 CMD ["python3", "main.py"]
 
 
