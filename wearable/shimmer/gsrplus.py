@@ -13,6 +13,7 @@ from .utils.ppg_to_hr import PPGtoHR
 class ShimmerGSRPlus:
 
     COM_PORT = '/dev/ttyS0'
+    TOPIC = 'sensor.gsr.value'
 
     def __init__(self) -> None:
         """Initializes the Shimmer GSR+ sensor device.
@@ -29,24 +30,14 @@ class ShimmerGSRPlus:
 
     @TEACHINGNode(produce=True, consume=False)
     def __call__(self):
-        sensing_topic = 'sensor.gsr.value'
-        if not self._process:
-            for n, reads in self._stream():
-                if n > 0:
-                    timestamp = reads.pop('timestamp')
-                    yield DataPacket(
-                        topic=sensing_topic, 
-                        timestamp=[datetime.fromtimestamp(t) for t in timestamp], 
-                        body=[dict(zip(reads,t)) for t in zip(*reads.values())]
-                    )
-        else:
-            for proc_reads in self._ppg_to_hr(self._stream()):
-                timestamp = proc_reads.pop('timestamp')
-                yield DataPacket(
-                    topic=sensing_topic, 
-                    timestamp=[datetime.fromtimestamp(t) for t in timestamp],
-                    body=[dict(zip(proc_reads,t)) for t in zip(*proc_reads.values())]
-                )
+        input_fn = self._stream() if not self._process else self._ppg_to_hr(self._stream())
+        for reads in input_fn:
+            timestamp = reads.pop('timestamp')
+            yield DataPacket(
+                topic=ShimmerGSRPlus.TOPIC, 
+                timestamp=[datetime.fromtimestamp(t) for t in timestamp], 
+                body=[dict(zip(reads,t)) for t in zip(*reads.values())]
+            )
 
 
     def _stream(self):
@@ -75,7 +66,8 @@ class ShimmerGSRPlus:
                 reads['ppg'].append(ppg)
                 reads['eda'].append(eda)
 
-            yield n, reads
+            if n > 0:
+                yield reads
 
     def _build(self):
         print("Building the Shimmer GSR+ service...")
