@@ -1,44 +1,47 @@
 import os
+import neurokit2 as nk
+
 from datetime import datetime
-from time import time
 
 from base.communication.packet import DataPacket
 from base.node import TEACHINGNode
 
 from .utils.shimmer import Shimmer3
-from .utils.shimmer_util import SHIMMER_GSRplus, BT_CONNECTED, SENSOR_GSR, SENSOR_INT_EXP_ADC_CH13, GSR_SKIN_CONDUCTANCE
-from .utils.ppg_to_hr import PPGtoHR
+from .utils.shimmer_util import (
+    SHIMMER_GSRplus, 
+    BT_CONNECTED, 
+    SENSOR_GSR, 
+    SENSOR_INT_EXP_ADC_CH13, 
+    GSR_SKIN_CONDUCTANCE
+)
 
 
-class ShimmerGSRPlus:
+class ShimmerGSRPlus(object):
 
     COM_PORT = '/dev/ttyS0'
     TOPIC = 'sensor.gsr.value'
 
     def __init__(self) -> None:
-        """Initializes the Shimmer GSR+ sensor device.
+        """Initializes the Shimmer GSR+ sensor device."""
 
-        Args:
-            sampling_rate (int): the sampling frequency of the sensor
-        """
         self._sampling_rate = int(os.environ['SAMPLING_RATE'])
-        self._process = os.environ['PROCESS'] in ['true', 'True']
+        self._process = os.environ['PROCESS'].lower() == 'true'
 
         self._device = None
-        self._ppg_to_hr = None
         self._build()
 
     @TEACHINGNode(produce=True, consume=False)
     def __call__(self):
-        input_fn = self._stream() if not self._process else self._ppg_to_hr(self._stream())
-        for reads in input_fn:
-            timestamp = reads.pop('timestamp')
+        input_fn = self._stream() 
+        if self._process:
+            input_fn = gsr_process(input_fn, self._sampling_rate)
+        
+        for timestamp, reads in input_fn:
             yield DataPacket(
                 topic=ShimmerGSRPlus.TOPIC, 
-                timestamp=[datetime.fromtimestamp(t) for t in timestamp], 
+                timestamp=timestamp, 
                 body=[dict(zip(reads,t)) for t in zip(*reads.values())]
             )
-
 
     def _stream(self):
         """This generator handles the stream of PPG, EDA and timestamp data from the Shimmer sensor.
@@ -57,30 +60,25 @@ class ShimmerGSRPlus:
 
         while True:
             n, packets = self._device.read_data_packet_extended(calibrated=True)
-            reads = {'timestamp': [], 'ppg': [], 'eda': []}
-            for pkt in packets:
-
-                timestamp, ppg, eda = pkt[2], pkt[3], pkt[4]
-
-                reads['timestamp'].append(timestamp)
-                reads['ppg'].append(ppg)
-                reads['eda'].append(eda)
-
             if n > 0:
-                yield reads
+                timestamp = []
+                reads = {'ppg': [], 'eda': []}
+                for pkt in packets:
+
+                    t, ppg, eda = pkt[2], pkt[3], pkt[4]
+
+                    timestamp.append(datetime.fromtimestamp(t))
+                    reads['ppg'].append(ppg)
+                    reads['eda'].append(eda)
+
+                    yield timestamp, reads
 
     def _build(self):
         print("Building the Shimmer GSR+ service...")
         self._device = Shimmer3(shimmer_type=SHIMMER_GSRplus, debug=True)
         self._connect()
         print("Done!")
-
-        if self._process:
-            print("Building the PPGtoHR processing module...")
-            self._ppg_to_hr = PPGtoHR(self._sampling_rate)
-            print("Done!")
     
-
     def _connect(self) -> bool:
         """This function handles the connection via bluetooth with the Shimmer sensor.
 
@@ -120,4 +118,45 @@ class ShimmerGSRPlus:
             return True
         else:
             return False
-    
+
+
+
+def gsr_process(stream, sampling_rate: int = 64):
+    """This generator processes the stream data from the Shimmer GSR+, aggregating samples for a seconds_per_return
+    timespan and processing PPG to HR.
+
+    Args:
+        stream: the device stream function
+        sampling_rate: the sampling rate of the Shimmer GSR+
+
+    Yields:
+        dict: a dictionary containing the timestamp, HR and EDA of the processed sample
+    """
+    min_threshold = 8 * sampling_rate
+    ppg_buffer, eda_buffer = [], []
+    for timestamp, reads in stream:
+        ppg_buffer += reads['ppg']
+        eda_buffer += reads['eda']
+        offset = len(ppg_buffer) - min_threshold
+        if offset > 0:
+            ppg_df, _ = nk.ppg_process(ppg_buffer, sampling_rate=sampling_rate)
+            heart_rate = ppg_df['PPG_Rate'].values.tolist()
+
+            eda_df, _ = nk.eda_process(eda_buffer, sampling_rate=sampling_rate)
+            eda, eda_tonic, eda_phasic = \
+                eda_df['EDA_Clean'].values.tolist(), \
+                eda_df['EDA_Tonic'].values.tolist(), \
+                eda_df['EDA_Phasic'].values.tolist()
+
+            timestamp = timestamp[-offset:]
+            to_publish = {
+                'hr': heart_rate[-offset:],
+                'eda': eda[-offset:],
+                'eda_tonic': eda_tonic[-offset:],
+                'eda_phasic': eda_phasic[-offset:]
+            }
+
+            ppg_buffer, eda_buffer = ppg_buffer[offset:], eda_buffer[offset:]
+            assert len(ppg_buffer) == min_threshold
+
+            yield timestamp, to_publish
