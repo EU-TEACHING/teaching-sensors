@@ -132,7 +132,7 @@ def gsr_process(stream, sampling_rate: int = 64):
     Yields:
         dict: a dictionary containing the timestamp, HR and EDA of the processed sample
     """
-    min_threshold = 8 * sampling_rate
+    min_threshold = int(os.getenv('WINDOW_SIZE'), '20') * sampling_rate
     ppg_buffer, eda_buffer = [], []
     for timestamp, reads in stream:
         ppg_buffer += reads['ppg']
