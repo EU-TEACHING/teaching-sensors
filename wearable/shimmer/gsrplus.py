@@ -37,11 +37,13 @@ class ShimmerGSRPlus(object):
             input_fn = gsr_process(input_fn, self._sampling_rate)
         
         for timestamp, reads in input_fn:
-            yield DataPacket(
+            dp = DataPacket(
                 topic=ShimmerGSRPlus.TOPIC, 
                 timestamp=timestamp, 
                 body=[dict(zip(reads,t)) for t in zip(*reads.values())]
             )
+            print(dp)
+            yield dp
 
     def _stream(self):
         """This generator handles the stream of PPG, EDA and timestamp data from the Shimmer sensor.
@@ -139,6 +141,7 @@ def gsr_process(stream, sampling_rate: int = 64):
         eda_buffer += reads['eda']
         offset = len(ppg_buffer) - min_threshold
         if offset > 0:
+            print(offset, len(ppg_buffer))
             ppg_df, _ = nk.ppg_process(ppg_buffer, sampling_rate=sampling_rate)
             heart_rate = ppg_df['PPG_Rate'].values.tolist()
 
