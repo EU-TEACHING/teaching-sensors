@@ -73,7 +73,7 @@ class ShimmerGSRPlus(object):
                     reads['ppg'].append(ppg)
                     reads['eda'].append(eda)
 
-                    yield timestamp, reads
+                yield timestamp, reads
 
     def _build(self):
         print("Building the Shimmer GSR+ service...")
