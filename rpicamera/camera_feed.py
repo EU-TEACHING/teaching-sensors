@@ -7,7 +7,7 @@ from base.communication.packet import DataPacket
 class CameraFeed:
     
     def __init__(self):
-        self.img_path = "current_img.jpg"
+        self.img_path = "/app/data/current_img.jpg"
         self._output_topic = os.environ['OUTPUT_TOPIC']
         self._capture_delay = float(os.environ['CAPTURE_DELAY'])
         self._build()
@@ -18,9 +18,10 @@ class CameraFeed:
         while True:
 
             ### create still image from camera and load it
-            os.system("libcamera-still -o {} --vflip --hflip".format(self.img_path))
+            # os.system("libcamera-still -n -o {} --vflip --hflip".format(self.img_path))
+            #
             while True:
-                if not os.path.exists("current_img.jpg"):
+                if not os.path.exists(self.img_path):
                     time.sleep(0.1)
                 else:
                     break
