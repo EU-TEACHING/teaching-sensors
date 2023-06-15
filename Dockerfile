@@ -7,6 +7,7 @@ RUN rm requirements.txt
 
 COPY /file /app/file
 COPY /wearable /app/wearable
+COPY /rpicamera /app/rpicamera
 COPY main.py /app/main.py
 
 CMD ["python3", "main.py"]
