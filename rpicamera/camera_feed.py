@@ -22,6 +22,7 @@ class CameraFeed:
             #
             while True:
                 if not os.path.exists(self.img_path):
+                    print("path does not exists!")
                     time.sleep(0.1)
                 else:
                     break
