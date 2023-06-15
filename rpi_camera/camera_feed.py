@@ -7,9 +7,9 @@ from base.communication.packet import DataPacket
 class CameraFeed:
     
     def __init__(self):
-        # seconds of delay between DataPackets
-        self.delay = 1
         self.img_path = "current_img.jpg"
+        self._output_topic = os.environ['OUTPUT_TOPIC']
+        self._capture_delay = float(os.environ['CAPTURE_DELAY'])
         self._build()
 
     @TEACHINGNode(produce=True, consume=False)
@@ -27,10 +27,10 @@ class CameraFeed:
             img = Image.open(self.img_path)
 
             ### send package
-            yield DataPacket(topic='sensor.camera.pics', body={'img': img})
+            yield DataPacket(topic=self._output_topic, body={'img': img})
 
             ### add delay
-            time.sleep(self.delay)
+            time.sleep(self._capture_delay)
 
     def _build(self):
 
