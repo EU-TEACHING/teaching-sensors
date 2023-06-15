@@ -1,5 +1,5 @@
 import os
-from time import time
+import time
 from PIL import Image
 from base.node import TEACHINGNode
 from base.communication.packet import DataPacket
@@ -25,7 +25,7 @@ class CameraFeed:
                 else:
                     break
             img = Image.open(self.img_path)
-
+            print("Picture captured!")
             ### send package
             yield DataPacket(topic=self._output_topic, body={'img': img})
 
