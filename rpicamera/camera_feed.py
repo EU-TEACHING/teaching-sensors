@@ -7,7 +7,7 @@ from base.communication.packet import DataPacket
 class CameraFeed:
     
     def __init__(self):
-        self.img_path = "/app/data/current_img.jpg"
+        self.img_path = "/app/storage/current_img.jpg"
         self._output_topic = os.environ['OUTPUT_TOPIC']
         self._capture_delay = float(os.environ['CAPTURE_DELAY'])
         self._build()
