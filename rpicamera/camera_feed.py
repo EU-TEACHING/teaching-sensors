@@ -33,12 +33,9 @@ class CameraFeed:
             img = Image.open(self.img_path)
             np_img = np.asarray(img)
 
-            if self.old_img is None:
-                self.old_img = np_img
-
-            if np.array_equal(self.old_img, np_img):
+            if not np.array_equal(self.old_img, np_img):
                 print("New image found!")
-                self.old_img = np_img
+            self.old_img = np_img
 
             print("Picture captured!")
             ### send package
