@@ -29,10 +29,17 @@ class CameraFeed:
                     time.sleep(0.1)
                 else:
                     break
+
             img = Image.open(self.img_path)
             np_img = np.asarray(img)
+
+            if self.old_img is None:
+                self.old_img = np_img
+
             if np.array_equal(self.old_img, np_img):
                 print("New image found!")
+                self.old_img = np_img
+
             print("Picture captured!")
             ### send package
             yield DataPacket(topic=self._output_topic, body={'img': np_img})
