@@ -1,6 +1,8 @@
 import os
 import time
 from PIL import Image
+import numpy as np
+
 from base.node import TEACHINGNode
 from base.communication.packet import DataPacket
 
@@ -8,6 +10,7 @@ class CameraFeed:
     
     def __init__(self):
         self.img_path = "/app/storage/current_img.jpg"
+        self.old_img = None
         self._output_topic = os.environ['OUTPUT_TOPIC']
         self._capture_delay = float(os.environ['CAPTURE_DELAY'])
         self._build()
@@ -27,9 +30,13 @@ class CameraFeed:
                 else:
                     break
             img = Image.open(self.img_path)
+            np_img = np.asarray(img)
+            if np.array_equal(self.old_img, np_img):
+                print("New image found!")
             print("Picture captured!")
             ### send package
-            yield DataPacket(topic=self._output_topic, body={'img': img})
+            yield DataPacket(topic=self._output_topic, body={'img': np_img})
+            print("Picture sent!")
 
             ### add delay
             time.sleep(self._capture_delay)
