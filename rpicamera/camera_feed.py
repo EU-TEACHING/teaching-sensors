@@ -39,7 +39,10 @@ class CameraFeed:
 
             print("Picture captured!")
             ### send package
-            yield DataPacket(topic=self._output_topic, body={'img': np_img.tobytes()})
+            img_msg = str(np_img.flatten()).strip("]").strip("[")
+            print("msg to send: ", img_msg)
+            #  to convert them back: np.fromstring(img_msg, sep=" ", dtype="uint8")
+            yield DataPacket(topic=self._output_topic, body={'img': img_msg})
             print("Picture sent!")
 
             ### add delay
