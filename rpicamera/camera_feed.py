@@ -40,7 +40,7 @@ class CameraFeed:
             print("Picture captured!")
             ### send package
             img_msg = str(np_img.flatten().tolist())
-            print("msg to send: ", img_msg)
+            # print("msg to send: ", img_msg)
             #  to convert them back: np.asarray(eval(img_msg), dtype="uint8").reshape(224, 224, 3)
             yield DataPacket(topic=self._output_topic, body={'img': img_msg})
             print("Picture sent!")
