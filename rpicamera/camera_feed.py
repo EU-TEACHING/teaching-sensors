@@ -39,7 +39,7 @@ class CameraFeed:
 
             print("Picture captured!")
             ### send package
-            yield DataPacket(topic=self._output_topic, body={'img': np_img})
+            yield DataPacket(topic=self._output_topic, body={'img': np_img.tostring()})
             print("Picture sent!")
 
             ### add delay
